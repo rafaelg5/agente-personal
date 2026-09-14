@@ -1,0 +1,374 @@
+<title>Bitácora del Agente</title>
+<style>
+  :root {
+    --bg: #eef1ee;
+    --paper: #ffffff;
+    --ink: #17211f;
+    --ink-soft: #46524f;
+    --line: #cdd6d1;
+    --accent: #b5652a;
+    --accent-soft: #f0e0d2;
+    --signal: #2f7d78;
+    --signal-soft: #dcece9;
+    --bad: #a83a3a;
+    --bad-soft: #f4dede;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    --sans: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121716;
+      --paper: #182120;
+      --ink: #e8ece9;
+      --ink-soft: #9fada9;
+      --line: #2d3a37;
+      --accent: #e08a4d;
+      --accent-soft: #3a2c20;
+      --signal: #5cbdb5;
+      --signal-soft: #1e3230;
+      --bad: #e08080;
+      --bad-soft: #3a2323;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121716;
+    --paper: #182120;
+    --ink: #e8ece9;
+    --ink-soft: #9fada9;
+    --line: #2d3a37;
+    --accent: #e08a4d;
+    --accent-soft: #3a2c20;
+    --signal: #5cbdb5;
+    --signal-soft: #1e3230;
+    --bad: #e08080;
+    --bad-soft: #3a2323;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.55;
+    padding-inline: 20px;
+    padding-block: 40px;
+  }
+  main { max-width: 920px; margin: 0 auto; }
+
+  h1, h2, h3 { text-wrap: balance; font-family: var(--mono); font-weight: 600; }
+  code, .mono { font-family: var(--mono); }
+
+  header.top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 20px;
+    margin-bottom: 8px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); margin: 4px 0 0; }
+  .subtitle { color: var(--ink-soft); font-size: 0.98rem; max-width: 60ch; }
+  .status-pill {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--signal-soft);
+    color: var(--signal);
+    border: 1px solid var(--signal);
+    border-radius: 3px;
+    padding: 5px 10px;
+    white-space: nowrap;
+  }
+  .status-pill .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--signal);
+  }
+
+  /* Pipeline diagram */
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 28px 0 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+  .pnode {
+    flex: 1 1 140px;
+    min-width: 128px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+  }
+  .pnode .k { color: var(--ink-soft); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .pnode .v { color: var(--ink); font-size: 0.86rem; margin-top: 3px; }
+  .parrow {
+    flex: 0 0 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-soft);
+    font-size: 1.1rem;
+  }
+  .pipeline-caption { font-family: var(--mono); font-size: 0.74rem; color: var(--ink-soft); margin-bottom: 36px; }
+
+  section { margin-bottom: 44px; }
+  section > h2 {
+    font-size: 1.02rem;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+    margin-bottom: 18px;
+  }
+  section > h2 .num { color: var(--accent); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 16px 18px;
+  }
+  .card h3 { font-size: 0.92rem; margin: 0 0 8px; }
+  .card p { margin: 0 0 8px; font-size: 0.88rem; color: var(--ink); }
+  .card .why { font-size: 0.82rem; color: var(--ink-soft); }
+  .card .why b { color: var(--ink); font-weight: 600; }
+  .card .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 3px;
+    padding: 2px 7px;
+    margin-bottom: 8px;
+  }
+
+  .rows { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .row {
+    display: grid;
+    grid-template-columns: minmax(140px, 200px) 1fr;
+    gap: 16px;
+    padding: 13px 16px;
+    background: var(--paper);
+  }
+  .row + .row { border-top: 1px solid var(--line); }
+  .row dt { font-family: var(--mono); font-size: 0.78rem; color: var(--accent); }
+  .row dd { margin: 0; font-size: 0.88rem; }
+  .row dd .why { display: block; color: var(--ink-soft); font-size: 0.82rem; margin-top: 4px; }
+
+  @media (max-width: 560px) {
+    .row { grid-template-columns: 1fr; gap: 4px; }
+  }
+
+  .callout {
+    background: var(--signal-soft);
+    border: 1px solid var(--signal);
+    border-radius: 4px;
+    padding: 14px 18px;
+    font-size: 0.88rem;
+  }
+  .callout.warn { background: var(--bad-soft); border-color: var(--bad); }
+  .callout code { background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 2px; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .callout code { background: rgba(255,255,255,0.08); }
+  }
+  :root[data-theme="dark"] .callout code { background: rgba(255,255,255,0.08); }
+
+  .kv-inline { font-family: var(--mono); font-size: 0.82rem; }
+
+  table.limits { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+  table.limits th, table.limits td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  table.limits th { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
+  table.limits td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  footer {
+    margin-top: 50px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+
+<main>
+  <header class="top">
+    <div>
+      <div class="eyebrow">Bitácora técnica</div>
+      <h1>Agente experiencia profesional de Rafael</h1>
+      <p class="subtitle">Decisiones de diseño, integración, despliegue y operación.</p>
+    </div>
+    <span class="status-pill"><span class="dot"></span>En producción: https://agente-personal-927116510261.us-central1.run.app</span>
+  </header>
+
+  <div class="pipeline">
+    <div class="pnode"><div class="k">Cliente</div><div class="v">agent-card</div></div>
+    <div class="parrow">→</div>
+    <div class="pnode"><div class="k">Servidor</div><div class="v">FastAPI | /v1/responses</div></div>
+    <div class="parrow">→</div>
+    <div class="pnode"><div class="k">Modelo</div><div class="v">Groq: openai/gpt-oss-120b | openai/gpt-oss-20b</div></div>
+    <div class="parrow">→</div>
+    <div class="pnode"><div class="k">Tools</div><div class="v">KnowledgeBase | GitHub | GitLab | Búsqueda Web</div></div>
+    <div class="parrow">→</div>
+    <div class="pnode"><div class="k">Origen</div><div class="v">Chroma | APIs públicas</div></div>
+  </div>
+
+  <section>
+    <h2><span class="num">01</span> ¿Por qué este protocolo y este modelo?</h2>
+    <div class="rows">
+      <div class="row">
+        <dt>Open Responses</dt>
+        <dd>Estándar abierto que replica la Responses API de OpenAI.
+          <span class="why">Por qué: requisito de la plataforma del reto.</span>
+        </dd>
+      </div>
+      <div class="row">
+        <dt>Groq - gpt-oss-120b</dt>
+        <dd>Se buscaba una solución rápida y gratuita dado el tiempo para preparar esta demostración. Se probó primero con un modelo local (Ollama - llama3.1), sin embargo las especificaciones de la computadora en la que se hizo este desarrollo no eran suficientes para desplegar este modelo en un servidor y tener un tiempo de respuesta aceptable. Se usó la plataforma Groq para consultar modelos en línea de manera más eficiente, aunque con límites de uso.
+        </dd>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span> Arquitectura de tools</h2>
+    <div class="grid">
+      <div class="card">
+        <span class="tag">búsqueda local</span>
+        <h3>search_knowledge_base</h3>
+        <p>Se indexó el archivo en formato PDF de mi CV en ChromaDB con embeddings locales (sentence-transformers), de esta manera el agente se vuelve en un agente RAG con información adicional al contexto específico, que en este caso es mi experiencia profesional.</p>
+      </div>
+      <div class="card">
+        <span class="tag">consulta en vivo</span>
+        <h3>fetch_github_profile / fetch_gitlab_profile</h3>
+        <p>Se consulta la información de cuentas de github y/o gitlab si se encuentran en el CV proporcionado, pero el agente también puede buscar las URLs de perfiles de estos sitios web o buscar por nombre de usuario y devolver información acerca de repositorios públicos.</p>
+      </div>
+      <div class="card">
+        <span class="tag">externo</span>
+        <h3>web_search (SerpAPI)</h3>
+        <p>Solo se invoca si el CV/GitHub/GitLab no son suficientes para responder una pregunta acerca de la persona, realiza una búsqueda web de la persona y devuelve información de sitios web que hagan match. Solo devuelve información relevante con la experiencia profesional de esta persona.</p>
+      </div>
+      <div class="card">
+        <span class="tag">seguridad</span>
+        <h3>separación de responsabilidades</h3>
+        <p>Solo <code class="mono">agente.py</code> y <code class="mono">agente_server.py</code> leen variables de entorno; <code class="mono">knowledge_base.py</code> y <code class="mono">tools.py</code> reciben todo como parámetros explícitos.</p>
+        <p class="why"><b>Por qué:</b> cada módulo es testeable de forma aislada, sin depender del orden de imports para tener las keys cargadas.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span> Memoria de conversación</h2>
+    <div class="rows">
+      <div class="row">
+        <dt>previous_response_id</dt>
+        <dd>Cada respuesta trae un <code class="mono">id</code>; mandarlo en el siguiente request continúa la misma conversación.
+        </dd>
+      </div>
+      <div class="row">
+        <dt>Almacenamiento</dt>
+        <dd>Diccionario en memoria del proceso (<code class="mono">SESSIONS</code>), no una base de datos externa. Para esta demostración se consideró que era suficiente este tipo de memoria.
+        </dd>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span> Despliegue: Docker + Cloud Run</h2>
+    <div class="grid">
+      <div class="card">
+        <span class="tag">Docker</span>
+        <p>Para facilitar el despliegue del agente, se considera que usar un contenedor con los paquetes suficientes es la opción ideal. Docker es la herramienta más usada para este tipo de casos y de la que tengo mejor conocimiento.</p>
+      </div>      
+      
+      <div class="card">
+        <span class="tag">Cloud Run</span>
+        <p>La opción gratis de Cloud Run te da 2M peticiones/mes, sin costo en reposo. Es una opción popular y con menos requisitos para su uso. En lo personal, he usado Google Cloud, por lo que ya tenía una cuenta y era una opción rápida donde podía desplegar el proyecto sin gastar.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span> Confiabilidad</h2>
+    <div class="rows">
+      <div class="row">
+        <dt>Tope de iteraciones</dt>
+        <dd><code class="mono">MAX_TOOL_ITERATIONS</code> corta el loop de tool-calling en vez de dejarlo indefinido.
+          <span class="why">Se detectó en producción: el modelo a veces entra en un ciclo de búsquedas reformuladas sin converger.</span>
+        </dd>
+      </div>
+      <div class="row">
+        <dt>Errores de la API distinguidos</dt>
+        <dd><code class="mono">RateLimitError</code> se maneja distinto de un error genérico.
+          <span class="why">Encontrado en vivo:Groq tiene un tope diario de tokens por modelo (200K TPD) que se agota probando.</span>
+        </dd>
+      </div>
+      <div class="row">
+        <dt>Fallback entre modelos</dt>
+        <dd><code class="mono">MODEL_FALLBACK_CHAIN</code>: si <code class="mono">gpt-oss-120b</code> agota su cupo diario, el agente reintenta automáticamente con <code class="mono">gpt-oss-20b</code> antes de rendirse.
+          <span class="why">Se evaluó sumar Qwen a la cadena, pero se descartó: con este agente (razonamiento + tools) agota su presupuesto de salida pensando, sin llegar a responder. Su tope de 1000 tokens de salida por minuto en Groq es insuficiente. Validado simulando ambos escenarios (un modelo caído, los dos caídos) antes de confiar en el mecanismo.</span>
+        </dd>
+      </div>
+      <div class="row">
+        <dt>Extracción de URLs del CV</dt>
+        <dd>Regex corregido para no fusionar URLs separadas por <code class="mono">|</code> sin espacio, y para recomponer una URL partida por un salto de línea del PDF en medio del TLD.
+          <span class="why">Bug real encontrado probando con el CV real: "linkedin...|www.github" se leía como una sola URL corrupta.</span>
+        </dd>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span> Seguridad</h2>
+    <table class="limits">
+      <thead><tr><th>Secreto</th><th>Dónde vive</th><th>Quién lo ve</th></tr></thead>
+      <tbody>
+        <tr><td>GROQ_API_KEY, SERPAPI_API_KEY, GITHUB_TOKEN, GITLAB_TOKEN</td><td class="mono">env vars del servidor</td><td class="num">nadie externo</td></tr>
+        <tr><td>AGENT_API_KEY</td><td class="mono">Bearer token propio</td><td class="num">solo quien llama al agente</td></tr>
+        <tr><td>Datos del CV</td><td class="mono">Chroma, en el propio proceso</td><td class="num">nunca sale sin pasar por una tool</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span> Cómo mostrarlo en vivo</h2>
+    <div class="callout">
+      <p style="margin:0 0 8px"><b>URL:</b> <span class="kv-inline">https://agente-personal-927116510261.us-central1.run.app</span></p>
+      <p style="margin:0 0 8px"><b>Tarjeta de agente</b> (auto-descubrimiento): agrega <code>/.well-known/agent-card.json</code></p>
+      <p style="margin:0">Pregunta de arranque sugerida: <i>"¿Qué experiencia tiene esta persona?"</i> → sigue con <i>"¿Tiene perfiles en redes sociales?"</i> pasando el <code class="mono">id</code> de la primera respuesta como <code class="mono">previous_response_id</code>, para mostrar la memoria de conversación en vivo.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>agente-personal · Cloud Run · us-central1</span>
+    <span>Groq · openai/gpt-oss-120b · Open Responses</span>
+  </footer>
+</main>

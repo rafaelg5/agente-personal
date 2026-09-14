@@ -1,0 +1,28 @@
+# Entornos virtuales
+.venv/
+.venv_linux/
+venv/
+env/
+
+# Variables de entorno / secretos
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Base de datos vectorial generada localmente
+chroma_db/
+
+# Archivos de IDE / SO
+.vscode/
+.idea/
+.DS_Store
+
+# Configuración local de Claude Code (no compartida)
+.claude/settings.local.json
+
+# Otros
+insomnia_open_responses.json
+test_agente_server.sh

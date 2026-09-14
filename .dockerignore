@@ -1,0 +1,10 @@
+.venv/
+.venv_linux/
+__pycache__/
+*.pyc
+chroma_db/
+.env
+.git/
+.claude/
+test_agente_server.sh
+insomnia_open_responses.json
