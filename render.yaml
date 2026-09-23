@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: agente-personal
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /v1/health
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SERPAPI_API_KEY
+        sync: false
+      - key: AGENT_API_KEY
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GITLAB_TOKEN
+        sync: false
+      - key: AGENT_NAME
+        sync: false
+      - key: AGENT_DESCRIPTION
+        sync: false
