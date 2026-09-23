@@ -190,7 +190,7 @@ def build_knowledge_base(cv_path: str = "cv.pdf") -> None:
     """
     (Re)indexa el CV en Chroma. Usa upsert internamente
     (KnowledgeBase.add_chunks), así que es seguro llamarla en cada arranque
-    del proceso (ej. cada cold start en Cloud Run) sin duplicar datos.
+    del proceso (ej. cada cold start en Render o Cloud Run) sin duplicar datos.
 
     El perfil de GitHub/GitLab ya NO se indexa aquí de antemano: el agente
     los consulta bajo demanda con las tools fetch_github_profile/

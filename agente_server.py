@@ -18,7 +18,7 @@ este proceso.
 Uso local:
     uvicorn agente_server:app --host 0.0.0.0 --port 8000
 
-En Cloud Run (o cualquier host con disco efímero) el índice de Chroma no
+En Render, Cloud Run (o cualquier host con disco efímero) el índice de Chroma no
 sobrevive entre instancias/cold starts, así que el CV se reindexa cada vez
 que arranca el proceso (ver build_knowledge_base en knowledge_base.py) —
 es idempotente (usa upsert), solo agrega unos segundos al primer request
@@ -26,10 +26,12 @@ tras un cold start. GitHub/GitLab ya no se indexan de antemano: el agente
 los consulta bajo demanda con sus propias tools.
 
 Variables de entorno:
-    AGENT_API_KEY   Token Bearer que deben mandar los clientes. En Cloud Run
-                    DEBE fijarse explícitamente (--set-env-vars): si no, cada
-                    instancia/cold start genera una distinta y los clientes
-                    quedan con un token inválido de forma intermitente.
+    AGENT_API_KEY   Token Bearer que deben mandar los clientes. En Render o
+                    Cloud Run DEBE fijarse explícitamente (variables de
+                    entorno del panel, o --set-env-vars en Cloud Run): si no,
+                    cada instancia/cold start genera una distinta y los
+                    clientes quedan con un token inválido de forma
+                    intermitente.
 """
 
 import os
@@ -53,8 +55,8 @@ if not AGENT_API_KEY:
     AGENT_API_KEY = secrets.token_urlsafe(24)
     print(
         "[agente_server] AVISO: AGENT_API_KEY no definida, generada solo para "
-        f"esta instancia: {AGENT_API_KEY}. En Cloud Run fija esta variable "
-        "explícitamente o cada cold start invalidará el token anterior."
+        f"esta instancia: {AGENT_API_KEY}. En Render o Cloud Run fija esta "
+        "variable explícitamente o cada cold start invalidará el token anterior."
     )
 
 AGENT_NAME = os.getenv("AGENT_NAME") or "Agente personal (CV + GitHub + GitLab)"

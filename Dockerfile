@@ -3,9 +3,9 @@ FROM python:3.12-slim
 WORKDIR /app
 
 # Instala PyTorch CPU-only primero: sentence-transformers arrastra el build
-# con CUDA por defecto (varios GB de paquetes nvidia-* inútiles en Cloud Run,
-# que no tiene GPU). Fijar la versión aquí evita que pip la reinstale al
-# resolver requirements.txt.
+# con CUDA por defecto (varios GB de paquetes nvidia-* inútiles en un host
+# sin GPU como Cloud Run o Render). Fijar la versión aquí evita que pip la
+# reinstale al resolver requirements.txt.
 RUN pip install --no-cache-dir torch==2.14.0 --index-url https://download.pytorch.org/whl/cpu
 
 COPY requirements.txt .
@@ -17,9 +17,10 @@ RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTr
 
 # A partir de aquí, offline: sin esto, sentence-transformers igual intenta
 # un HEAD request a huggingface.co en cada arranque para revisar si hay una
-# versión más nueva del modelo. La IP compartida de Cloud Run recibe 429 de
-# Hugging Face, y la librería espera hasta 88s antes de reintentar — eso es
-# lo que causaba los cold starts de más de 60s. Ya tenemos el modelo local.
+# versión más nueva del modelo. La IP compartida del host (Cloud Run, Render,
+# etc.) recibe 429 de Hugging Face, y la librería espera hasta 88s antes de
+# reintentar — eso es lo que causaba los cold starts de más de 60s. Ya
+# tenemos el modelo local.
 ENV HF_HUB_OFFLINE=1
 ENV TRANSFORMERS_OFFLINE=1
 

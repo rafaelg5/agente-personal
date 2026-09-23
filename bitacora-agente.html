@@ -205,6 +205,23 @@
   table.limits th { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
   table.limits td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 
+  .shot-list { display: flex; flex-direction: column; gap: 26px; }
+  .shot { display: grid; grid-template-columns: 40px 1fr; gap: 14px; }
+  .shot .idx { font-family: var(--mono); color: var(--accent); font-size: 0.9rem; padding-top: 4px; }
+  .shot figure { margin: 0; }
+  .shot img {
+    width: 100%;
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--paper);
+  }
+  .shot figcaption { margin-top: 8px; font-size: 0.86rem; color: var(--ink-soft); }
+  .shot figcaption b { color: var(--ink); font-weight: 600; }
+  @media (max-width: 560px) {
+    .shot { grid-template-columns: 1fr; }
+  }
+
   footer {
     margin-top: 50px;
     padding-top: 18px;
@@ -226,7 +243,7 @@
       <h1>Agente experiencia profesional de Rafael</h1>
       <p class="subtitle">Decisiones de diseño, integración, despliegue y operación.</p>
     </div>
-    <span class="status-pill"><span class="dot"></span>En producción: https://agente-personal-927116510261.us-central1.run.app</span>
+    <span class="status-pill"><span class="dot"></span>En producción: https://agente-personal-f72g.onrender.com</span>
   </header>
 
   <div class="pipeline">
@@ -302,7 +319,7 @@
   </section>
 
   <section>
-    <h2><span class="num">04</span> Despliegue: Docker + Cloud Run</h2>
+    <h2><span class="num">04</span> Despliegue: Docker + Render</h2>
     <div class="grid">
       <div class="card">
         <span class="tag">Docker</span>
@@ -310,8 +327,8 @@
       </div>      
       
       <div class="card">
-        <span class="tag">Cloud Run</span>
-        <p>La opción gratis de Cloud Run te da 2M peticiones/mes, sin costo en reposo. Es una opción popular y con menos requisitos para su uso. En lo personal, he usado Google Cloud, por lo que ya tenía una cuenta y era una opción rápida donde podía desplegar el proyecto sin gastar.</p>
+        <span class="tag">Render</span>
+        <p>El free tier de Render permite desplegar el contenedor sin necesidad de una tarjeta o cuenta de facturación, con el mismo comportamiento de escalar a cero en reposo.</p>
       </div>
     </div>
   </section>
@@ -361,14 +378,91 @@
   <section>
     <h2><span class="num">07</span> Cómo mostrarlo en vivo</h2>
     <div class="callout">
-      <p style="margin:0 0 8px"><b>URL:</b> <span class="kv-inline">https://agente-personal-927116510261.us-central1.run.app</span></p>
+      <p style="margin:0 0 8px"><b>URL:</b> <span class="kv-inline">https://agente-personal-f72g.onrender.com</span></p>
       <p style="margin:0 0 8px"><b>Tarjeta de agente</b> (auto-descubrimiento): agrega <code>/.well-known/agent-card.json</code></p>
       <p style="margin:0">Pregunta de arranque sugerida: <i>"¿Qué experiencia tiene esta persona?"</i> → sigue con <i>"¿Tiene perfiles en redes sociales?"</i> pasando el <code class="mono">id</code> de la primera respuesta como <code class="mono">previous_response_id</code>, para mostrar la memoria de conversación en vivo.</p>
     </div>
   </section>
 
+  <section>
+    <h2><span class="num">08</span> Demostración paso a paso</h2>
+    <p class="pipeline-caption" style="margin-bottom:20px">Sesión real contra el agente desplegado, integrado como agente Open Responses en la plataforma del reto.</p>
+    <div class="shot-list">
+      <div class="shot">
+        <div class="idx">01</div>
+        <figure>
+          <img src="screenshots/1.png" alt="Panel de agentes conectados vía Open Responses">
+          <figcaption>El <b>Agente personal (CV + GitHub + GitLab)</b> ya conectado en la plataforma del reto, junto a la guía del reto.</figcaption>
+        </figure>
+      </div>
+      <div class="shot">
+        <div class="idx">02</div>
+        <figure>
+          <img src="screenshots/2.png" alt="Configuración del agente: URL base y clave de API">
+          <figcaption>Configuración del agente: URL base (<code class="mono">.../v1</code>) y clave de API como Bearer token, sobre el protocolo Open Responses.</figcaption>
+        </figure>
+      </div>
+      <div class="shot">
+        <div class="idx">03</div>
+        <figure>
+          <img src="screenshots/3.png" alt="Primera pregunta: información general sobre Rafael">
+          <figcaption><b>"Hola! Qué información tienes acerca de Rafael?"</b> — perfil completo: contacto, LinkedIn, GitHub, GitLab, experiencia y educación.</figcaption>
+        </figure>
+      </div>
+      <div class="shot">
+        <div class="idx">04</div>
+        <figure>
+          <img src="screenshots/4.png" alt="Continuación de la respuesta: proyectos de GitHub y resumen">
+          <figcaption>Misma respuesta, continuación: certificaciones, stack técnico, proyectos de GitHub y resumen generado por el modelo.</figcaption>
+        </figure>
+      </div>
+      <div class="shot">
+        <div class="idx">05</div>
+        <figure>
+          <img src="screenshots/5.png" alt="Pregunta sobre experiencia profesional">
+          <figcaption><b>"¿Qué experiencia tiene esta persona?"</b> — tabla de puestos, empresas y responsabilidades extraída del CV.</figcaption>
+        </figure>
+      </div>
+      <div class="shot">
+        <div class="idx">06</div>
+        <figure>
+          <img src="screenshots/6.png" alt="Pregunta de seguimiento sobre redes sociales, resuelta con memoria de conversación">
+          <figcaption><b>"¿Tiene perfiles en redes sociales?"</b> — responde sin repetir el nombre: la memoria de conversación (<code class="mono">previous_response_id</code>) funcionando en vivo.</figcaption>
+        </figure>
+      </div>
+      <div class="shot">
+        <div class="idx">07</div>
+        <figure>
+          <img src="screenshots/7.png" alt="Otro hilo donde una pregunta sin nombre explícito pierde el contexto">
+          <figcaption>Otro hilo: <b>"¿Cuál es el nombre completo de Rafael?"</b> funciona, pero <b>"¿En dónde vive?"</b> pierde el contexto — esta integración no encadenó <code class="mono">previous_response_id</code> entre esos dos mensajes, así que cada uno dependió de repetir el nombre.</figcaption>
+        </figure>
+      </div>
+      <div class="shot">
+        <div class="idx">08</div>
+        <figure>
+          <img src="screenshots/8.png" alt="Listado de repositorios públicos de GitHub">
+          <figcaption><b>"¿Qué repositorios públicos tiene Rafael?"</b> — <code class="mono">fetch_github_profile</code> en vivo, incluye el propio repositorio de este agente.</figcaption>
+        </figure>
+      </div>
+      <div class="shot">
+        <div class="idx">09</div>
+        <figure>
+          <img src="screenshots/9.png" alt="Listado de repositorios de GitLab">
+          <figcaption><b>"¿Cuáles son los repositorios de GitLab de Rafael?"</b> — <code class="mono">fetch_gitlab_profile</code> en vivo.</figcaption>
+        </figure>
+      </div>
+      <div class="shot">
+        <div class="idx">10</div>
+        <figure>
+          <img src="screenshots/10.png" alt="Pregunta resuelta con búsqueda web">
+          <figcaption><b>"¿Cuántos contactos tiene Rafael en LinkedIn?"</b> — dato que no está en el CV ni en GitHub/GitLab: resuelto con <code class="mono">web_search</code>.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
   <footer>
-    <span>agente-personal · Cloud Run · us-central1</span>
+    <span>agente-personal · Render</span>
     <span>Groq · openai/gpt-oss-120b · Open Responses</span>
   </footer>
 </main>

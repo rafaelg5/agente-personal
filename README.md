@@ -8,7 +8,7 @@ Agente conversacional que responde preguntas sobre una persona específica usand
 - **Base de conocimiento**: tu CV (PDF), indexado en [ChromaDB](https://www.trychroma.com/) con embeddings locales (`sentence-transformers`). Las URLs que aparecen en el CV (LinkedIn, GitHub, GitLab, portafolio, etc.) se indexan aparte para que el agente las encuentre fácilmente.
 - **Tools**: `search_knowledge_base` (busca en Chroma), `fetch_github_profile`/`fetch_gitlab_profile` (consultan esas plataformas en vivo cuando el agente encuentra una URL relevante en el CV o el usuario da directamente un nombre de usuario) y `web_search` (SerpAPI). Todas se ejecutan del lado del servidor.
 - **Servidor**: FastAPI (`agente_server.py`) expone el agente como un endpoint HTTP compatible con Open Responses, protegido con un token Bearer propio.
-- **Despliegue**: Docker + Google Cloud Run (escala a cero, gratis en reposo). El índice de Chroma se reconstruye en cada cold start (el disco no persiste entre instancias), no se necesita almacenamiento externo.
+- **Despliegue**: Docker + Render (escala a cero, gratis y sin tarjeta) o Google Cloud Run como alternativa. El índice de Chroma se reconstruye en cada cold start (el disco no persiste entre instancias), no se necesita almacenamiento externo.
 
 ## Estructura del proyecto
 
@@ -18,7 +18,8 @@ Agente conversacional que responde preguntas sobre una persona específica usand
 | `knowledge_base.py` | Ingesta y clase `KnowledgeBase` sobre Chroma (solo el CV se indexa). También trae `fetch_github_profile`/`fetch_gitlab_profile` (usadas por `tools.py` para consultas en vivo). No lee variables de entorno — recibe todo como parámetros. |
 | `tools.py` | Definición de las tools (`TOOLS`) y su implementación (`TOOL_FUNCTIONS`): búsqueda en la KB, GitHub, GitLab y web. Tampoco lee variables de entorno directamente — `agente.py` le pasa las keys/tokens vía `configure()`. |
 | `agente_server.py` | Servidor FastAPI: expone `/v1/responses`, `/v1/health` y `/.well-known/agent-card.json`; maneja auth y CORS. |
-| `Dockerfile` | Imagen para desplegar en Cloud Run (PyTorch CPU-only, modelo de embeddings pre-descargado, `HF_HUB_OFFLINE=1`). |
+| `Dockerfile` | Imagen para desplegar en Render o Cloud Run (PyTorch CPU-only, modelo de embeddings pre-descargado, `HF_HUB_OFFLINE=1`). |
+| `render.yaml` | Blueprint de Render: define el servicio y las variables de entorno que hay que llenar al desplegar. |
 | `.env.example` | Template de variables de entorno — cópialo a `.env` y completa los valores. |
 
 ## Requisitos previos
@@ -78,9 +79,23 @@ El historial se guarda en memoria del proceso — se pierde al reiniciar el serv
 
 Ver [.env.example](.env.example) para la lista completa con defaults. Las únicas dos obligatorias son `GROQ_API_KEY` y `SERPAPI_API_KEY`.
 
-## Despliegue en Cloud Run
+## Despliegue en Render (recomendado, gratis sin tarjeta)
 
-Requiere el CLI de `gcloud` autenticado y un proyecto de GCP con facturación habilitada (el uso normal de este agente cae dentro del free tier).
+A diferencia de Cloud Run, el free tier de Render no requiere una cuenta de facturación activa — no hace falta tarjeta para desplegar. El repo incluye [render.yaml](render.yaml) (Blueprint de Render) con la definición del servicio ya lista.
+
+```
+Dashboard de Render → New + → Blueprint → selecciona este repo
+```
+
+Render detecta `render.yaml` automáticamente y pide llenar las variables de entorno marcadas como secretas (`GROQ_API_KEY`, `SERPAPI_API_KEY`, `AGENT_API_KEY`, etc. — ver [.env.example](.env.example)). El `Dockerfile` ya lee `$PORT` dinámicamente, que es como Render expone el contenedor.
+
+**Fija `AGENT_API_KEY` explícitamente** en las variables de entorno del servicio — si no, cada cold start genera uno nuevo y los clientes quedan con un token inválido de forma intermitente.
+
+El servicio free se suspende tras 15 minutos sin tráfico y tarda ~1 minuto en despertar en el siguiente request (igual que el escalado a cero de Cloud Run). El índice de Chroma se reconstruye en cada cold start, igual que en Cloud Run.
+
+## Despliegue en Cloud Run (alternativa)
+
+Requiere el CLI de `gcloud` autenticado y un proyecto de GCP con **facturación activa** — a diferencia de Render, GCP exige una cuenta de facturación con método de pago vigente incluso para quedarte dentro del free tier; si la facturación se deshabilita (tarjeta rechazada, cuenta suspendida, etc.) el servicio deja de responder con 503 aunque el uso real siga siendo gratis.
 
 ```bash
 gcloud run deploy agente-personal \
